@@ -1,5 +1,6 @@
 ﻿using Auxiliary.Configuration;
 using Infuse.Data;
+using System.Timers;
 using Terraria;
 using TerrariaApi.Server;
 using TShockAPI;
@@ -10,6 +11,8 @@ namespace Infuse
     [ApiVersion(2, 1)]
     public class Infuse : TerrariaPlugin
     {
+        private System.Timers.Timer _buffTimer;
+
         public override string Author
             => "TBC Developers";
 
@@ -22,7 +25,9 @@ namespace Infuse
         public override Version Version
             => new(1, 0);
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         public Infuse(Main game)
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
             : base(game)
         {
             Order = 1;
@@ -38,11 +43,42 @@ namespace Infuse
                 x.Player.SendSuccessMessage("[Infuse] Reloaded configuration.");
             };
 
-            Commands.ChatCommands.Add(new Command("infuse.self", Self, "infuse"));
-            Commands.ChatCommands.Add(new Command("infuse.others", Target, "infuseother"));
+            Commands.ChatCommands.Add(new Command("infuse.self", 
+                async (x) => await Self(x), "infuse"));
+
+            Commands.ChatCommands.Add(new Command("infuse.others", 
+                async (x) => await Target(x), "infuseother"));
+
+            _buffTimer = new(1000)
+            {
+                AutoReset = true
+            };
+            _buffTimer.Elapsed += async (_, x)
+                => await Tick(x);
+
+            _buffTimer.Start();
         }
 
-        private void Self(CommandArgs args)
+        private static async Task Tick(ElapsedEventArgs _)
+        {
+            for (int i = 0; i < 256; i++)
+            {
+                var plr = TShock.Players[i];
+
+                if (plr is null || !(plr.Active && plr.IsLoggedIn))
+                    continue;
+
+                if (plr.Account is null)
+                    continue;
+
+                var entity = await BuffsEntity.GetAsync(plr.Account.ID);
+
+                foreach (var buff in entity.Buffs)
+                    plr.SetBuff(buff, 120);
+            }
+        }
+
+        private static async Task Self(CommandArgs args)
         {
             if (!args.Player.IsLoggedIn)
             {
@@ -56,10 +92,10 @@ namespace Infuse
                 return;
             }
 
-            Handle(args.Player, args.Parameters[0]);
+            await Handle(args.Player, args.Parameters[0]);
         }
 
-        private void Target(CommandArgs args)
+        private static async Task Target(CommandArgs args)
         {
             if (!args.Player.IsLoggedIn)
             {
@@ -82,16 +118,16 @@ namespace Infuse
                 args.Player.SendMultipleMatchError(players.Select(x => x.Name));
 
             else
-                Handle(players[0], args.Parameters[1]);
+                await Handle(players[0], args.Parameters[1]);
         }
 
-        private void Handle(TSPlayer source, string buff, TSPlayer? target = null)
+        private static async Task Handle(TSPlayer source, string buff, TSPlayer? target = null)
         {
             target ??= source;
 
             var id = target.Account.ID;
 
-            var entity = BuffsEntity.GetAsync(id).GetAwaiter().GetResult();
+            var entity = await BuffsEntity.GetAsync(id);
 
             if (!int.TryParse(buff, out int buffId))
             {
@@ -110,7 +146,7 @@ namespace Infuse
 
             if (buffId is > 0 and < Main.maxBuffTypes)
             {
-                else if (entity.Buffs.Contains(buffId))
+                if (entity.Buffs.Contains(buffId))
                 {
                     entity.Buffs = entity.Buffs.Where(x => x != buffId).ToArray();
 

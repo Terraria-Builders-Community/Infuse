@@ -46,7 +46,7 @@ namespace Infuse.Data
             var entity = new BuffsEntity
             {
                 TShockId = tshockId,
-                Buffs = Configuration<BuildModeSettings>.Settings.DefaultBuffs
+                Buffs = Array.Empty<int>()
             };
 
             await _client.InsertDocumentAsync(entity);
