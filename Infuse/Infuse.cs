@@ -144,7 +144,7 @@ namespace Infuse
 
             }
 
-            if (buffId is > 0 and < Main.maxBuffTypes)
+            if (buffId is > 0 && buffId < Terraria.ID.BuffID.Count)
             {
                 if (entity.Buffs.Contains(buffId))
                 {
