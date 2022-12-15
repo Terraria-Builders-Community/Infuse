@@ -1,4 +1,5 @@
-﻿using Auxiliary.Configuration;
+﻿using Auxiliary;
+using Auxiliary.Configuration;
 using Infuse.Data;
 using System.Timers;
 using Terraria;
@@ -71,9 +72,9 @@ namespace Infuse
                 if (plr.Account is null)
                     continue;
 
-                var entity = await BuffsEntity.GetAsync(plr.Account.ID);
+                var entity = await IModel.GetAsync(GetRequest.Bson<InfuseUser>(x => x.TShockId == plr.Account.ID), x => x.TShockId = plr.Account.ID);
 
-                foreach (var buff in entity.Buffs)
+                foreach (var buff in entity!.Buffs)
                     plr.SetBuff(buff, 120);
             }
         }
@@ -127,7 +128,7 @@ namespace Infuse
 
             var id = target.Account.ID;
 
-            var entity = await BuffsEntity.GetAsync(id);
+            var entity = await IModel.GetAsync(GetRequest.Bson<InfuseUser>(x => x.TShockId == target.Account.ID), x => x.TShockId = target.Account.ID);
 
             if (!int.TryParse(buff, out int buffId))
             {
@@ -146,7 +147,7 @@ namespace Infuse
 
             if (buffId is > 0 && buffId < Terraria.ID.BuffID.Count)
             {
-                if (entity.Buffs.Contains(buffId))
+                if (entity!.Buffs.Contains(buffId))
                 {
                     entity.Buffs = entity.Buffs.Where(x => x != buffId).ToArray();
 
