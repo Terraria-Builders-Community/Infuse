@@ -61,7 +61,7 @@ namespace Infuse
 
         private static async Task Tick(ElapsedEventArgs _)
         {
-            for (int i = 0; i < 256; i++)
+            for (int i = 0; i < 255; i++)
             {
                 var plr = TShock.Players[i];
 
