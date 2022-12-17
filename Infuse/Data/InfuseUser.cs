@@ -1,16 +1,7 @@
 ﻿using Auxiliary;
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
-using MongoDB.Driver;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infuse.Data
 {
-    [BsonIgnoreExtraElements]
     public class InfuseUser : BsonModel
     {
         private int _tshockId;
@@ -35,11 +26,6 @@ namespace Infuse.Data
                 _ = this.SaveAsync(x => x.Buffs, value);
                 _buffs = value;
             }
-        }
-
-        public void Dispose()
-        {
-
         }
     }
 }

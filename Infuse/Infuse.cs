@@ -44,10 +44,10 @@ namespace Infuse
                 x.Player.SendSuccessMessage("[Infuse] Reloaded configuration.");
             };
 
-            Commands.ChatCommands.Add(new Command("infuse.self", 
+            Commands.ChatCommands.Add(new Command("infuse.self",
                 async (x) => await Self(x), "infuse"));
 
-            Commands.ChatCommands.Add(new Command("infuse.others", 
+            Commands.ChatCommands.Add(new Command("infuse.others",
                 async (x) => await Target(x), "infuseother"));
 
             _buffTimer = new(1000)
